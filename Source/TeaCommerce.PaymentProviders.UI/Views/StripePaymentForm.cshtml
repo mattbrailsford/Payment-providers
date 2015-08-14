@@ -24,6 +24,21 @@
         }
     </span>
 
+    @if (!string.IsNullOrWhiteSpace(Request.Form["address"]))
+    {
+        <input type="hidden" data-stripe="address_line1" value="@Request.Form["address"]" />
+    }
+    
+    @if (!string.IsNullOrWhiteSpace(Request.Form["zipcode"]))
+    {
+        <input type="hidden" data-stripe="address_zip" value="@Request.Form["zipcode"]" />
+    }
+    
+    @if (!string.IsNullOrWhiteSpace(Request.Form["country"]))
+    {
+        <input type="hidden" data-stripe="address_country" value="@Request.Form["country"]" />
+    }
+
     <div class="form-row"> 
         <label>
             <span>Card Number</span>

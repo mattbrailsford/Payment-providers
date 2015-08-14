@@ -38,7 +38,6 @@ namespace TeaCommerce.PaymentProviders.Inline {
           { "validate_zipcode", "false" },
           { "zipcode_property_alias", "zipCode" },
           { "validate_country", "false" },
-          { "country_property_alias", "country" },
           { "test_secret_key", "" },
           { "test_public_key", "" },
           { "live_secret_key", "" },
@@ -59,21 +58,23 @@ namespace TeaCommerce.PaymentProviders.Inline {
         Action = settings[ "form_url" ]
       };
 
-      string[] settingsToExclude = new[] { "form_url", "capture", "test_secret_key", "test_public_key", "live_secret_key", "live_public_key", "mode" };
+      string[] settingsToExclude = new[]
+      {
+          "form_url", "capture", "test_secret_key", "test_public_key", "live_secret_key", "live_public_key", "mode",
+          "validate_cvc", "validate_address", "address_property_alias", "validate_zipcode", "zipcode_property_alias", "validate_country", "country_property_alias"
+      };
       htmlForm.InputFields = settings.Where( i => !settingsToExclude.Contains( i.Key ) ).ToDictionary( i => i.Key, i => i.Value );
 
       htmlForm.InputFields[ "api_key" ] = settings[ settings[ "mode" ] + "_public_key" ];
       htmlForm.InputFields[ "continue_url" ] = teaCommerceContinueUrl;
       htmlForm.InputFields[ "cancel_url" ] = teaCommerceCancelUrl;
+      htmlForm.InputFields[ "country" ] = CountryService.Instance.Get(order.StoreId, order.PaymentInformation.CountryId).RegionCode.ToLowerInvariant();
 
       if (settings.ContainsKey("address_property_alias") && !string.IsNullOrWhiteSpace(settings["address_property_alias"]))
           htmlForm.InputFields[ "address" ] = order.Properties.First(x => x.Alias == settings["address_property_alias"]).Value;
 
       if (settings.ContainsKey("zipcode_property_alias") && !string.IsNullOrWhiteSpace(settings["zipcode_property_alias"]))
           htmlForm.InputFields[ "zipcode" ] = order.Properties.First(x => x.Alias == settings["zipcode_property_alias"]).Value;
-
-      if (settings.ContainsKey("country_property_alias") && !string.IsNullOrWhiteSpace(settings["country_property_alias"]))
-          htmlForm.InputFields[ "country" ] = order.Properties.First(x => x.Alias == settings["country_property_alias"]).Value;
 
       return htmlForm;
     }
@@ -205,9 +206,9 @@ namespace TeaCommerce.PaymentProviders.Inline {
         // Check country
         if (validateCountry)
         {
-            var country = order.Properties.FirstOrDefault(x => x.Alias == settings["country_property_alias"]);
-            if (country != null &&
-                charge.StripeCard.Country.ToLowerInvariant() != country.Value.ToLowerInvariant())
+            var country = CountryService.Instance.Get(order.StoreId, order.PaymentInformation.CountryId);
+            if (country != null && !string.IsNullOrWhiteSpace(charge.StripeCard.Country) &&
+                charge.StripeCard.Country.ToLowerInvariant() != country.RegionCode.ToLowerInvariant())
             {
                 throw new StripeException(HttpStatusCode.Unauthorized,
                     new StripeError
@@ -413,8 +414,8 @@ namespace TeaCommerce.PaymentProviders.Inline {
           return settingsKey + "<br/><small>The alias of the order property containing the billing address zip code.</small>";
         case "validate_country":
           return settingsKey + "<br/><small>Flag indicating whether to validate the supplied billing address country - true/false.</small>";
-        case "country_property_alias":
-          return settingsKey + "<br/><small>The alias of the order property containing the billing address country.</small>";
+        /*case "country_property_alias":
+          return settingsKey + "<br/><small>The alias of the order property containing the billing address country.</small>";*/
         case "test_secret_key":
           return settingsKey + "<br/><small>Your test stripe secret key.</small>";
         case "test_public_key":
