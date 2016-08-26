@@ -15,7 +15,7 @@ namespace TeaCommerce.PaymentProviders.Classic {
   [PaymentProvider( "QuickPay" )]
   public class QuickPay : APaymentProvider {
 
-    public override string DocumentationLink { get { return "http://anders.burla.dk/umbraco/tea-commerce/using-quickpay-wit-tea-commerce/"; } }
+    public override string DocumentationLink { get { return "https://documentation.teacommerce.net/guides/payment-providers/quickpay/"; } }
 
     public override bool SupportsRetrievalOfPaymentStatus { get { return true; } }
     public override bool SupportsCapturingOfPayment { get { return true; } }
