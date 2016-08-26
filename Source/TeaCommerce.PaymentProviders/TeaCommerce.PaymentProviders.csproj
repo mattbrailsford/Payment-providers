@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>TeaCommerce.PaymentProviders</RootNamespace>
     <AssemblyName>TeaCommerce.PaymentProviders</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -39,14 +39,16 @@
       <HintPath>..\Lib\Klarna\Klarna.Checkout.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\Lib\Tea Commerce\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.8.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Paynova.Api.Client">
       <HintPath>..\packages\Paynova.Api.Client.1.0.0\lib\net35\Paynova.Api.Client.dll</HintPath>
     </Reference>
-    <Reference Include="Stripe.net">
-      <HintPath>..\Lib\StripeDotNet\Stripe.net.dll</HintPath>
+    <Reference Include="Stripe.net, Version=6.4.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Stripe.net.6.4.0\lib\net45\Stripe.net.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -116,6 +118,7 @@
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="packages.config" />
     <None Include="Service References\ePayService\payment.wsdl" />
     <None Include="Service References\ePayService\TeaCommerce.PaymentProviders.ePayService.CardType.datasource">

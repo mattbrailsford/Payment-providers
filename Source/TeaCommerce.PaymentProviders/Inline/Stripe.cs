@@ -146,9 +146,9 @@ namespace TeaCommerce.PaymentProviders.Inline {
         StripeChargeService chargeService = new StripeChargeService(settings[settings["mode"] + "_secret_key"]);
         StripeChargeCreateOptions chargeOptions = new StripeChargeCreateOptions
         {
-          AmountInCents = (int)( order.TotalPrice.Value.WithVat * 100 ),
+          Amount = (int)( order.TotalPrice.Value.WithVat * 100 ),
           Currency = CurrencyService.Instance.Get( order.StoreId, order.CurrencyId ).IsoCode,
-          TokenId = request.Form[ "stripeToken" ],
+          SourceTokenOrExistingSourceId = request.Form[ "stripeToken" ],
           Description = order.CartNumber,
           Capture = false // Initially don't capture the payment untill validation complete
         };
@@ -156,7 +156,7 @@ namespace TeaCommerce.PaymentProviders.Inline {
         StripeCharge charge = chargeService.Create( chargeOptions );
 
         // Check CVC
-        if (validateCvc && charge.StripeCard.CvcCheck == "fail")
+        if (validateCvc && charge.Source.Card.CvcCheck == "fail")
         {
             throw new StripeException(HttpStatusCode.Unauthorized,
                 new StripeError
@@ -171,7 +171,7 @@ namespace TeaCommerce.PaymentProviders.Inline {
         if (validateAddress)
         {
             var address = order.Properties.FirstOrDefault(x => x.Alias == settings["address_property_alias"]);
-            if (address != null && (address.Value != charge.StripeCard.AddressLine1 || charge.StripeCard.AddressLine1Check == "fail"))
+            if (address != null && (address.Value != charge.Source.Card.AddressLine1 || charge.Source.Card.AddressLine1Check == "fail"))
             {
                 throw new StripeException(HttpStatusCode.Unauthorized,
                     new StripeError
@@ -189,7 +189,7 @@ namespace TeaCommerce.PaymentProviders.Inline {
         if (validateZipCode)
         {
             var zipCode = order.Properties.FirstOrDefault(x => x.Alias == settings["zipcode_property_alias"]);
-            if (zipCode != null && (zipCode.Value != charge.StripeCard.AddressZip || charge.StripeCard.AddressZipCheck == "fail"))
+            if (zipCode != null && (zipCode.Value != charge.Source.Card.AddressZip || charge.Source.Card.AddressZipCheck == "fail"))
             {
                 throw new StripeException(HttpStatusCode.Unauthorized,
                     new StripeError
@@ -207,8 +207,8 @@ namespace TeaCommerce.PaymentProviders.Inline {
         if (validateCountry)
         {
             var country = CountryService.Instance.Get(order.StoreId, order.PaymentInformation.CountryId);
-            if (country != null && !string.IsNullOrWhiteSpace(charge.StripeCard.Country) &&
-                charge.StripeCard.Country.ToLowerInvariant() != country.RegionCode.ToLowerInvariant())
+            if (country != null && !string.IsNullOrWhiteSpace(charge.Source.Card.Country) &&
+                charge.Source.Card.Country.ToLowerInvariant() != country.RegionCode.ToLowerInvariant())
             {
                 throw new StripeException(HttpStatusCode.Unauthorized,
                     new StripeError
@@ -223,7 +223,7 @@ namespace TeaCommerce.PaymentProviders.Inline {
         }
 
         // Check payment ammount
-        if (charge.AmountInCents == null || charge.AmountInCents != chargeOptions.AmountInCents)
+        if (charge.Amount != chargeOptions.Amount)
         {
             throw new StripeException(HttpStatusCode.Unauthorized,
                 new StripeError
@@ -235,7 +235,7 @@ namespace TeaCommerce.PaymentProviders.Inline {
         }
 
         // Check paid status
-        if (charge.Paid == null || !charge.Paid.Value)
+        if (!charge.Paid)
         {
             throw new StripeException(HttpStatusCode.Unauthorized,
                 new StripeError
@@ -262,7 +262,7 @@ namespace TeaCommerce.PaymentProviders.Inline {
             }
         }
 
-        callbackInfo = new CallbackInfo((decimal)charge.AmountInCents.Value / 100, charge.Id, capture ? PaymentState.Captured : PaymentState.Authorized);
+        callbackInfo = new CallbackInfo((decimal)charge.Amount / 100, charge.Id, capture ? PaymentState.Captured : PaymentState.Authorized);
 
       } catch ( StripeException e ) {
         // Pass through request fields
@@ -377,10 +377,10 @@ namespace TeaCommerce.PaymentProviders.Inline {
         settings.MustContainKey( "mode", "settings" );
         settings.MustContainKey( settings[ "mode" ] + "_secret_key", "settings" );
 
-        StripeChargeService chargeService = new StripeChargeService( settings[ settings[ "mode" ] + "_secret_key" ] );
-        StripeCharge charge = chargeService.Refund( order.TransactionInformation.TransactionId );
+        StripeRefundService refundService = new StripeRefundService(settings[settings["mode"] + "_secret_key"]);
+        StripeRefund refund = refundService.Create( order.TransactionInformation.TransactionId );
 
-        return new ApiInfo( charge.Id, GetPaymentState( charge ) );
+        return new ApiInfo(refund.ChargeId, GetPaymentState( refund.Charge ) );
       } catch ( Exception exp ) {
         LoggingService.Instance.Log( exp, "Stripe(" + order.OrderNumber + ") - RefundPayment" );
       }
@@ -434,17 +434,17 @@ namespace TeaCommerce.PaymentProviders.Inline {
     protected PaymentState GetPaymentState( StripeCharge charge ) {
       PaymentState paymentState = PaymentState.Initialized;
 
-      if ( charge.Paid != null && charge.Paid.Value ) {
+      if ( charge.Paid ) {
         paymentState = PaymentState.Authorized;
 
         if ( charge.Captured != null && charge.Captured.Value ) {
           paymentState = PaymentState.Captured;
 
-          if ( charge.Refunded != null && charge.Refunded.Value ) {
+          if ( charge.Refunded ) {
             paymentState = PaymentState.Refunded;
           }
         } else {
-          if ( charge.Refunded != null && charge.Refunded.Value ) {
+          if ( charge.Refunded ) {
             paymentState = PaymentState.Cancelled;
           }
         }
