@@ -112,7 +112,7 @@ namespace TeaCommerce.PaymentProviders.Classic {
 
         //Write data when testing
         if ( settings.ContainsKey( "testmode" ) && settings[ "testmode" ] == "1" ) {
-          LogRequest<Netaxept>( request, logGetData: true );
+          LogRequest( request, logGetData: true );
         }
 
         string responseCode = request.QueryString[ "responseCode" ];
@@ -141,21 +141,21 @@ namespace TeaCommerce.PaymentProviders.Classic {
 
               callbackInfo = new CallbackInfo( totalAmount, transactionId, !autoCapture ? PaymentState.Authorized : PaymentState.Captured, cardType, cardNumber );
             } else {
-              LoggingService.Instance.Warn<Netaxept>( "Netaxept(" + order.CartNumber + ") - ProcessCallback error - " + xmlResponse.XPathSelectElement( "//Error/Message" ).Value );
+              LoggingService.Instance.Log( "Netaxept(" + order.CartNumber + ") - ProcessCallback error - " + xmlResponse.XPathSelectElement( "//Error/Message" ).Value );
             }
           } else {
             string errorMessage = "Netaxept(" + order.CartNumber + ") - ProcessCallback error - " + xmlResponse.XPathSelectElement( "//Error/Message" ).Value;
             if ( xmlResponse.XPathSelectElement( "//Error/Result" ) != null ) {
               errorMessage += " response code: " + xmlResponse.XPathSelectElement( "//Error/Result/ResponseCode" ).Value + " transactionId: " + xmlResponse.XPathSelectElement( "//Error/Result/TransactionId" ).Value;
             }
-            LoggingService.Instance.Warn<Netaxept>( errorMessage );
+            LoggingService.Instance.Log( errorMessage );
           }
 
         } else {
-          LoggingService.Instance.Warn<Netaxept>( "Netaxept(" + order.CartNumber + ") - Response code isn't valid - response code: " + responseCode );
+          LoggingService.Instance.Log( "Netaxept(" + order.CartNumber + ") - Response code isn't valid - response code: " + responseCode );
         }
       } catch ( Exception exp ) {
-        LoggingService.Instance.Error<Netaxept>( "Netaxept(" + order.CartNumber + ") - Process callback", exp );
+        LoggingService.Instance.Log(exp,   "Netaxept(" + order.CartNumber + ") - Process callback" );
       }
 
       HttpContext.Current.Response.Redirect( order.Properties[ callbackInfo != null ? "teaCommerceContinueUrl" : "teaCommerceCancelUrl" ], false );
@@ -198,11 +198,11 @@ namespace TeaCommerce.PaymentProviders.Classic {
 
           apiInfo = new ApiInfo( transactionId, paymentState );
         } else {
-          LoggingService.Instance.Warn<Netaxept>( "Netaxept(" + order.OrderNumber + ") - Error making API request - error message: " + xmlResponse.XPathSelectElement( "//Error/Message" ).Value );
+          LoggingService.Instance.Log( "Netaxept(" + order.OrderNumber + ") - Error making API request - error message: " + xmlResponse.XPathSelectElement( "//Error/Message" ).Value );
         }
 
       } catch ( Exception exp ) {
-        LoggingService.Instance.Error<Netaxept>( "Netaxept(" + order.OrderNumber + ") - Get status", exp );
+        LoggingService.Instance.Log(exp,   "Netaxept(" + order.OrderNumber + ") - Get status" );
       }
 
       return apiInfo;
@@ -226,7 +226,7 @@ namespace TeaCommerce.PaymentProviders.Classic {
 
         apiInfo = MakeApiRequest( order.OrderNumber, inputFields, order.TransactionInformation.TransactionId, PaymentState.Captured, settings.ContainsKey( "testMode" ) && settings[ "testMode" ] == "1" ? "https://epayment-test.bbs.no/Netaxept/Process.aspx" : "https://epayment.bbs.no/Netaxept/Process.aspx" );
       } catch ( Exception exp ) {
-        LoggingService.Instance.Error<Netaxept>( "Netaxept(" + order.OrderNumber + ") - Capture payment", exp );
+        LoggingService.Instance.Log(exp,   "Netaxept(" + order.OrderNumber + ") - Capture payment" );
       }
 
       return apiInfo;
@@ -250,7 +250,7 @@ namespace TeaCommerce.PaymentProviders.Classic {
 
         apiInfo = MakeApiRequest( order.OrderNumber, inputFields, order.TransactionInformation.TransactionId, PaymentState.Refunded, settings.ContainsKey( "testMode" ) && settings[ "testMode" ] == "1" ? "https://epayment-test.bbs.no/Netaxept/Process.aspx" : "https://epayment.bbs.no/Netaxept/Process.aspx" );
       } catch ( Exception exp ) {
-        LoggingService.Instance.Error<Netaxept>( "Netaxept(" + order.OrderNumber + ") - Refund payment", exp );
+        LoggingService.Instance.Log(exp,   "Netaxept(" + order.OrderNumber + ") - Refund payment" );
       }
 
       return apiInfo;
@@ -273,7 +273,7 @@ namespace TeaCommerce.PaymentProviders.Classic {
 
         apiInfo = MakeApiRequest( order.OrderNumber, inputFields, order.TransactionInformation.TransactionId, PaymentState.Cancelled, settings.ContainsKey( "testMode" ) && settings[ "testMode" ] == "1" ? "https://epayment-test.bbs.no/Netaxept/Process.aspx" : "https://epayment.bbs.no/Netaxept/Process.aspx" );
       } catch ( Exception exp ) {
-        LoggingService.Instance.Error<Netaxept>( "Netaxept(" + order.OrderNumber + ") - Cancel payment", exp );
+        LoggingService.Instance.Log(exp,   "Netaxept(" + order.OrderNumber + ") - Cancel payment" );
       }
 
       return apiInfo;
@@ -309,10 +309,10 @@ namespace TeaCommerce.PaymentProviders.Classic {
         if ( xmlResponse.XPathSelectElement( "//ProcessResponse" ) != null && xmlResponse.XPathSelectElement( "//ProcessResponse/ResponseCode" ).Value == "OK" ) {
           apiInfo = new ApiInfo( transactionId, paymentState );
         } else {
-          LoggingService.Instance.Warn<Netaxept>( "Netaxept(" + orderNumber + ") - Error making API request - error message: " + xmlResponse.XPathSelectElement( "//Error/Message" ).Value );
+          LoggingService.Instance.Log( "Netaxept(" + orderNumber + ") - Error making API request - error message: " + xmlResponse.XPathSelectElement( "//Error/Message" ).Value );
         }
       } catch ( Exception exp ) {
-        LoggingService.Instance.Error<Netaxept>( "Netaxept(" + orderNumber + ") - Make API request", exp );
+        LoggingService.Instance.Log(exp,   "Netaxept(" + orderNumber + ") - Make API request" );
       }
 
       return apiInfo;

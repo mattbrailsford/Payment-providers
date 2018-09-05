@@ -89,7 +89,7 @@ namespace TeaCommerce.PaymentProviders.Classic {
         htmlForm.Action = xmlDoc.XPathSelectElement( "//redirectUrl" ).Value;
       } else {
         htmlForm.Action = teaCommerceCancelUrl;
-        LoggingService.Instance.Warn<PayEx>( "PayEx(" + order.CartNumber + ") - Generate html form error - error code: " + xmlDoc.XPathSelectElement( "//status/description" ).Value );
+        LoggingService.Instance.Log( "PayEx(" + order.CartNumber + ") - Generate html form error - error code: " + xmlDoc.XPathSelectElement( "//status/description" ).Value );
       }
 
       return htmlForm;
@@ -148,10 +148,10 @@ namespace TeaCommerce.PaymentProviders.Classic {
 
           callbackInfo = new CallbackInfo( amount / 100M, transactionNumber, paymentState, paymentMethod, maskedNumber );
         } else {
-          LoggingService.Instance.Warn<PayEx>( "PayEx(" + order.CartNumber + ") - Callback failed - error code: " + errorCode + " - Description: " + xmlDoc.XPathSelectElement( "//status/description" ).Value );
+          LoggingService.Instance.Log( "PayEx(" + order.CartNumber + ") - Callback failed - error code: " + errorCode + " - Description: " + xmlDoc.XPathSelectElement( "//status/description" ).Value );
         }
       } catch ( Exception exp ) {
-        LoggingService.Instance.Error<PayEx>( "PayEx(" + order.CartNumber + ") - Process callback", exp );
+        LoggingService.Instance.Log(exp,   "PayEx(" + order.CartNumber + ") - Process callback" );
       }
 
       return callbackInfo;
@@ -193,10 +193,10 @@ namespace TeaCommerce.PaymentProviders.Classic {
 
           apiInfo = new ApiInfo( xmlDoc.XPathSelectElement( "//transactionNumber" ).Value, paymentState );
         } else {
-          LoggingService.Instance.Warn<PayEx>( "PayEx(" + order.OrderNumber + ") - Error making API request - Error code: " + errorCode + " - Description: " + xmlDoc.XPathSelectElement( "//status/description" ).Value );
+          LoggingService.Instance.Log( "PayEx(" + order.OrderNumber + ") - Error making API request - Error code: " + errorCode + " - Description: " + xmlDoc.XPathSelectElement( "//status/description" ).Value );
         }
       } catch ( Exception exp ) {
-        LoggingService.Instance.Error<PayEx>( "PayEx(" + order.OrderNumber + ") - Get status", exp );
+        LoggingService.Instance.Log(exp,   "PayEx(" + order.OrderNumber + ") - Get status" );
       }
 
       return apiInfo;
@@ -226,10 +226,10 @@ namespace TeaCommerce.PaymentProviders.Classic {
         if ( errorCode == "OK" && xmlDoc.XPathSelectElement( "//transactionStatus" ).Value == "6" ) {
           apiInfo = new ApiInfo( xmlDoc.XPathSelectElement( "//transactionNumber" ).Value, PaymentState.Captured );
         } else {
-          LoggingService.Instance.Warn<PayEx>( "PayEx(" + order.OrderNumber + ") - Error making API request - Error code: " + errorCode + " - Description: " + xmlDoc.XPathSelectElement( "//status/description" ).Value );
+          LoggingService.Instance.Log( "PayEx(" + order.OrderNumber + ") - Error making API request - Error code: " + errorCode + " - Description: " + xmlDoc.XPathSelectElement( "//status/description" ).Value );
         }
       } catch ( Exception exp ) {
-        LoggingService.Instance.Error<PayEx>( "PayEx(" + order.OrderNumber + ") - Capture payment", exp );
+        LoggingService.Instance.Log(exp,   "PayEx(" + order.OrderNumber + ") - Capture payment" );
       }
 
       return apiInfo;
@@ -259,10 +259,10 @@ namespace TeaCommerce.PaymentProviders.Classic {
         if ( errorCode == "OK" && xmlDoc.XPathSelectElement( "//transactionStatus" ).Value == "2" ) {
           apiInfo = new ApiInfo( xmlDoc.XPathSelectElement( "//transactionNumber" ).Value, PaymentState.Refunded );
         } else {
-          LoggingService.Instance.Warn<PayEx>( "PayEx(" + order.OrderNumber + ") - Error making API request - Error code: " + errorCode + " - Description: " + xmlDoc.XPathSelectElement( "//status/description" ).Value );
+          LoggingService.Instance.Log( "PayEx(" + order.OrderNumber + ") - Error making API request - Error code: " + errorCode + " - Description: " + xmlDoc.XPathSelectElement( "//status/description" ).Value );
         }
       } catch ( Exception exp ) {
-        LoggingService.Instance.Error<PayEx>( "PayEx(" + order.OrderNumber + ") - Refund payment", exp );
+        LoggingService.Instance.Log(exp,   "PayEx(" + order.OrderNumber + ") - Refund payment" );
       }
 
       return apiInfo;
@@ -288,10 +288,10 @@ namespace TeaCommerce.PaymentProviders.Classic {
         if ( errorCode == "OK" && xmlDoc.XPathSelectElement( "//transactionStatus" ).Value == "4" ) {
           apiInfo = new ApiInfo( xmlDoc.XPathSelectElement( "//transactionNumber" ).Value, PaymentState.Cancelled );
         } else {
-          LoggingService.Instance.Warn<PayEx>( "PayEx(" + order.OrderNumber + ") - Error making API request - Error code: " + errorCode + " - Description: " + xmlDoc.XPathSelectElement( "//status/description" ).Value );
+          LoggingService.Instance.Log( "PayEx(" + order.OrderNumber + ") - Error making API request - Error code: " + errorCode + " - Description: " + xmlDoc.XPathSelectElement( "//status/description" ).Value );
         }
       } catch ( Exception exp ) {
-        LoggingService.Instance.Error<PayEx>( "PayEx(" + order.OrderNumber + ") - Cancel payment", exp );
+        LoggingService.Instance.Log(exp,   "PayEx(" + order.OrderNumber + ") - Cancel payment" );
       }
 
       return apiInfo;

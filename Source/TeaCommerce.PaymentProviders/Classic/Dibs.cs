@@ -124,7 +124,7 @@ namespace TeaCommerce.PaymentProviders.Classic {
 
         //Write data when testing
         if ( settings.ContainsKey( "test" ) && settings[ "test" ] == "1" ) {
-          LogRequest<Dibs>( request, logPostData: true );
+          LogRequest( request, logPostData: true );
         }
 
         string transaction = request.Form[ "transact" ];
@@ -149,10 +149,10 @@ namespace TeaCommerce.PaymentProviders.Classic {
         if ( GenerateMD5Hash( settings[ "md5k2" ] + GenerateMD5Hash( md5CheckValue ) ) == authkey ) {
           callbackInfo = new CallbackInfo( totalAmount / 100M, transaction, !autoCaptured ? PaymentState.Authorized : PaymentState.Captured, paytype, cardnomask );
         } else {
-          LoggingService.Instance.Warn<Dibs>( "DIBS(" + order.CartNumber + ") - MD5Sum security check failed" );
+          LoggingService.Instance.Log( "DIBS(" + order.CartNumber + ") - MD5Sum security check failed" );
         }
       } catch ( Exception exp ) {
-        LoggingService.Instance.Error<Dibs>( "DIBS(" + order.CartNumber + ") - Process callback", exp );
+        LoggingService.Instance.Log(exp,   "DIBS(" + order.CartNumber + ") - Process callback" );
       }
 
       return callbackInfo;
@@ -194,11 +194,11 @@ namespace TeaCommerce.PaymentProviders.Classic {
 
           apiInfo = new ApiInfo( order.TransactionInformation.TransactionId, paymentState );
         } catch ( WebException ) {
-          LoggingService.Instance.Warn<Dibs>( "DIBS(" + order.OrderNumber + ") - Error making API request - wrong credentials" );
+          LoggingService.Instance.Log( "DIBS(" + order.OrderNumber + ") - Error making API request - wrong credentials" );
         }
 
       } catch ( Exception exp ) {
-        LoggingService.Instance.Error<Dibs>( "DIBS(" + order.OrderNumber + ") - Get status", exp );
+        LoggingService.Instance.Log(exp,   "DIBS(" + order.OrderNumber + ") - Get status" );
       }
 
       return apiInfo;
@@ -245,14 +245,14 @@ namespace TeaCommerce.PaymentProviders.Classic {
           if ( result == "0" ) {
             apiInfo = new ApiInfo( order.TransactionInformation.TransactionId, PaymentState.Captured );
           } else {
-            LoggingService.Instance.Warn<Dibs>( "DIBS(" + order.OrderNumber + ") - Error making API request - error message: " + result );
+            LoggingService.Instance.Log( "DIBS(" + order.OrderNumber + ") - Error making API request - error message: " + result );
           }
         } catch ( WebException ) {
-          LoggingService.Instance.Warn<Dibs>( "DIBS(" + order.OrderNumber + ") - Error making API request - wrong credentials" );
+          LoggingService.Instance.Log( "DIBS(" + order.OrderNumber + ") - Error making API request - wrong credentials" );
         }
 
       } catch ( Exception exp ) {
-        LoggingService.Instance.Error<Dibs>( "DIBS(" + order.OrderNumber + ") - Capture payment", exp );
+        LoggingService.Instance.Log(exp,   "DIBS(" + order.OrderNumber + ") - Capture payment" );
       }
 
       return apiInfo;
@@ -307,14 +307,14 @@ namespace TeaCommerce.PaymentProviders.Classic {
           if ( result == "0" ) {
             apiInfo = new ApiInfo( order.TransactionInformation.TransactionId, PaymentState.Refunded );
           } else {
-            LoggingService.Instance.Warn<Dibs>( "DIBS(" + order.OrderNumber + ") - Error making API request - error message: " + result );
+            LoggingService.Instance.Log( "DIBS(" + order.OrderNumber + ") - Error making API request - error message: " + result );
           }
         } catch ( WebException ) {
-          LoggingService.Instance.Warn<Dibs>( "DIBS(" + order.OrderNumber + ") - Error making API request - wrong credentials" );
+          LoggingService.Instance.Log( "DIBS(" + order.OrderNumber + ") - Error making API request - wrong credentials" );
         }
 
       } catch ( Exception exp ) {
-        LoggingService.Instance.Error<Dibs>( "DIBS(" + order.OrderNumber + ") - Refund payment", exp );
+        LoggingService.Instance.Log(exp,   "DIBS(" + order.OrderNumber + ") - Refund payment" );
       }
 
       return apiInfo;
@@ -359,14 +359,14 @@ namespace TeaCommerce.PaymentProviders.Classic {
           if ( result == "0" ) {
             apiInfo = new ApiInfo( order.TransactionInformation.TransactionId, PaymentState.Cancelled );
           } else {
-            LoggingService.Instance.Warn<Dibs>( "DIBS(" + order.OrderNumber + ") - Error making API request - error message: " + result );
+            LoggingService.Instance.Log( "DIBS(" + order.OrderNumber + ") - Error making API request - error message: " + result );
           }
         } catch ( WebException ) {
-          LoggingService.Instance.Warn<Dibs>( "DIBS(" + order.OrderNumber + ") - Error making API request - wrong credentials" );
+          LoggingService.Instance.Log( "DIBS(" + order.OrderNumber + ") - Error making API request - wrong credentials" );
         }
 
       } catch ( Exception exp ) {
-        LoggingService.Instance.Error<Dibs>( "DIBS(" + order.OrderNumber + ") - Refund payment", exp );
+        LoggingService.Instance.Log(exp,   "DIBS(" + order.OrderNumber + ") - Refund payment" );
       }
 
       return apiInfo;

@@ -107,7 +107,7 @@ namespace TeaCommerce.PaymentProviders.Classic {
 
         //Write data when testing
         if ( settings.ContainsKey( "TESTMODE" ) && settings[ "TESTMODE" ] == "1" ) {
-          LogRequest<Ogone>( request, logGetData: true );
+          LogRequest( request, logGetData: true );
         }
 
         Dictionary<string, string> inputFields = new Dictionary<string, string>();
@@ -130,10 +130,10 @@ namespace TeaCommerce.PaymentProviders.Classic {
         if ( order.CartNumber == request.QueryString[ "ORDERID" ] && digest.Equals( shaSign ) ) {
           callbackInfo = new CallbackInfo( decimal.Parse( strAmount, CultureInfo.InvariantCulture ), transaction, status == "5" || status == "51" ? PaymentState.Authorized : PaymentState.Captured, cardType, cardNo );
         } else {
-          LoggingService.Instance.Warn<Ogone>( "Ogone(" + order.CartNumber + ") - SHASIGN check isn't valid - Calculated digest: " + digest + " - Ogone SHASIGN: " + shaSign );
+          LoggingService.Instance.Log( "Ogone(" + order.CartNumber + ") - SHASIGN check isn't valid - Calculated digest: " + digest + " - Ogone SHASIGN: " + shaSign );
         }
       } catch ( Exception exp ) {
-        LoggingService.Instance.Error<Ogone>( "Ogone(" + order.CartNumber + ") - Process callback", exp );
+        LoggingService.Instance.Log(exp,   "Ogone(" + order.CartNumber + ") - Process callback" );
       }
 
       return callbackInfo;
@@ -171,11 +171,11 @@ namespace TeaCommerce.PaymentProviders.Classic {
         if ( paymentState != PaymentState.Error ) {
           apiInfo = new ApiInfo( doc.XPathSelectElement( "//ncresponse" ).Attribute( "PAYID" ).Value, paymentState );
         } else {
-          LoggingService.Instance.Warn<Ogone>( "Ogone - Error making API request - error code: " + doc.XPathSelectElement( "//ncresponse" ).Attribute( "NCERROR" ).Value + " - " + doc.XPathSelectElement( "//ncresponse" ).Attribute( "NCERRORPLUS" ).Value );
+          LoggingService.Instance.Log( "Ogone - Error making API request - error code: " + doc.XPathSelectElement( "//ncresponse" ).Attribute( "NCERROR" ).Value + " - " + doc.XPathSelectElement( "//ncresponse" ).Attribute( "NCERRORPLUS" ).Value );
         }
 
       } catch ( Exception exp ) {
-        LoggingService.Instance.Error<Ogone>( "Ogone(" + order.OrderNumber + ") - Get status", exp );
+        LoggingService.Instance.Log(exp,   "Ogone(" + order.OrderNumber + ") - Get status" );
       }
 
       return apiInfo;
@@ -191,10 +191,10 @@ namespace TeaCommerce.PaymentProviders.Classic {
         if ( status == "9" || status == "91" ) {
           apiInfo = new ApiInfo( doc.XPathSelectElement( "//ncresponse" ).Attribute( "PAYID" ).Value, PaymentState.Captured );
         } else {
-          LoggingService.Instance.Warn<Ogone>( "Ogone - Error making API request - error code: " + doc.XPathSelectElement( "//ncresponse" ).Attribute( "NCERROR" ).Value + " - " + doc.XPathSelectElement( "//ncresponse" ).Attribute( "NCERRORPLUS" ).Value );
+          LoggingService.Instance.Log( "Ogone - Error making API request - error code: " + doc.XPathSelectElement( "//ncresponse" ).Attribute( "NCERROR" ).Value + " - " + doc.XPathSelectElement( "//ncresponse" ).Attribute( "NCERRORPLUS" ).Value );
         }
       } catch ( Exception exp ) {
-        LoggingService.Instance.Error<Ogone>( "Ogone(" + order.OrderNumber + ") - Capture payment", exp );
+        LoggingService.Instance.Log(exp,   "Ogone(" + order.OrderNumber + ") - Capture payment" );
       }
 
       return apiInfo;
@@ -214,13 +214,13 @@ namespace TeaCommerce.PaymentProviders.Classic {
           if ( status == "7" || status == "71" || status == "8" || status == "81" ) {
             apiInfo = new ApiInfo( doc.XPathSelectElement( "//ncresponse" ).Attribute( "PAYID" ).Value, PaymentState.Refunded );
           } else {
-            LoggingService.Instance.Warn<Ogone>( "Ogone - Error making API request - error code: " + doc.XPathSelectElement( "//ncresponse" ).Attribute( "NCERROR" ).Value + " - " + doc.XPathSelectElement( "//ncresponse" ).Attribute( "NCERRORPLUS" ).Value );
+            LoggingService.Instance.Log( "Ogone - Error making API request - error code: " + doc.XPathSelectElement( "//ncresponse" ).Attribute( "NCERROR" ).Value + " - " + doc.XPathSelectElement( "//ncresponse" ).Attribute( "NCERRORPLUS" ).Value );
           }
         } else {
-          LoggingService.Instance.Warn<Ogone>( "Ogone - Error making API request - can't refund a transaction with status 91 - please try again in 5 minutes" );
+          LoggingService.Instance.Log( "Ogone - Error making API request - can't refund a transaction with status 91 - please try again in 5 minutes" );
         }
       } catch ( Exception exp ) {
-        LoggingService.Instance.Error<Ogone>( "Ogone(" + order.OrderNumber + ") - Refund payment", exp );
+        LoggingService.Instance.Log(exp,   "Ogone(" + order.OrderNumber + ") - Refund payment" );
       }
 
       return apiInfo;
@@ -236,10 +236,10 @@ namespace TeaCommerce.PaymentProviders.Classic {
         if ( status == "6" || status == "61" ) {
           apiInfo = new ApiInfo( doc.XPathSelectElement( "//ncresponse" ).Attribute( "PAYID" ).Value, PaymentState.Cancelled );
         } else {
-          LoggingService.Instance.Warn<Ogone>( "Ogone - Error making API request - error code: " + doc.XPathSelectElement( "//ncresponse" ).Attribute( "NCERROR" ).Value + " - " + doc.XPathSelectElement( "//ncresponse" ).Attribute( "NCERRORPLUS" ).Value );
+          LoggingService.Instance.Log( "Ogone - Error making API request - error code: " + doc.XPathSelectElement( "//ncresponse" ).Attribute( "NCERROR" ).Value + " - " + doc.XPathSelectElement( "//ncresponse" ).Attribute( "NCERRORPLUS" ).Value );
         }
       } catch ( Exception exp ) {
-        LoggingService.Instance.Error<Ogone>( "Ogone(" + order.OrderNumber + ") - Cancel payment", exp );
+        LoggingService.Instance.Log(exp,   "Ogone(" + order.OrderNumber + ") - Cancel payment" );
       }
 
       return apiInfo;

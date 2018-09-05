@@ -102,7 +102,7 @@ namespace TeaCommerce.PaymentProviders.Classic {
 
         //Write data when testing
         if ( settings.ContainsKey( "isSandbox" ) && settings[ "isSandbox" ] == "1" ) {
-          LogRequest<PayPal>( request, logPostData: true );
+          LogRequest( request, logPostData: true );
         }
 
         //Verify callback
@@ -145,13 +145,13 @@ namespace TeaCommerce.PaymentProviders.Classic {
               callbackInfo = new CallbackInfo( amount, transaction, PaymentState.Captured );
             }
           } else {
-            LoggingService.Instance.Warn<PayPal>( "PayPal(" + order.CartNumber + ") - Business isn't identical - settings: " + businessSetting + " | request-receiverId: " + receiverId + " | request-receiverEmail: " + receiverEmail );
+            LoggingService.Instance.Log( "PayPal(" + order.CartNumber + ") - Business isn't identical - settings: " + businessSetting + " | request-receiverId: " + receiverId + " | request-receiverEmail: " + receiverEmail );
           }
         } else {
-          LoggingService.Instance.Warn<PayPal>( "PayPal(" + order.CartNumber + ") - Couldn't verify response: " + response );
+          LoggingService.Instance.Log( "PayPal(" + order.CartNumber + ") - Couldn't verify response: " + response );
         }
       } catch ( Exception exp ) {
-        LoggingService.Instance.Error<PayPal>( "PayPal(" + order.CartNumber + ") - Process callback", exp );
+        LoggingService.Instance.Log(exp,   "PayPal(" + order.CartNumber + ") - Process callback" );
       }
 
       return callbackInfo;
@@ -163,7 +163,7 @@ namespace TeaCommerce.PaymentProviders.Classic {
       try {
         apiInfo = InternalGetStatus( order.OrderNumber, order.TransactionInformation.TransactionId, settings );
       } catch ( Exception exp ) {
-        LoggingService.Instance.Error<PayPal>( "PayPal(" + order.OrderNumber + ") - Get status", exp );
+        LoggingService.Instance.Log(exp,   "PayPal(" + order.OrderNumber + ") - Get status" );
       }
 
       return apiInfo;
@@ -192,10 +192,10 @@ namespace TeaCommerce.PaymentProviders.Classic {
         if ( responseKvp[ "ACK" ] == "Success" || responseKvp[ "ACK" ] == "SuccessWithWarning" ) {
           apiInfo = InternalGetStatus( order.OrderNumber, responseKvp[ "TRANSACTIONID" ], settings );
         } else {
-          LoggingService.Instance.Warn<PayPal>( "PayPal(" + order.OrderNumber + ") - Error making API request - error code: " + responseKvp[ "L_ERRORCODE0" ] );
+          LoggingService.Instance.Log( "PayPal(" + order.OrderNumber + ") - Error making API request - error code: " + responseKvp[ "L_ERRORCODE0" ] );
         }
       } catch ( Exception exp ) {
-        LoggingService.Instance.Error<PayPal>( "PayPal(" + order.OrderNumber + ") - Refund payment", exp );
+        LoggingService.Instance.Log(exp,   "PayPal(" + order.OrderNumber + ") - Refund payment" );
       }
 
       return apiInfo;
@@ -217,10 +217,10 @@ namespace TeaCommerce.PaymentProviders.Classic {
         if ( responseKvp[ "ACK" ] == "Success" || responseKvp[ "ACK" ] == "SuccessWithWarning" ) {
           apiInfo = InternalGetStatus( order.OrderNumber, responseKvp[ "REFUNDTRANSACTIONID" ], settings );
         } else {
-          LoggingService.Instance.Warn<PayPal>( "PayPal(" + order.OrderNumber + ") - Error making API request - error code: " + responseKvp[ "L_ERRORCODE0" ] );
+          LoggingService.Instance.Log( "PayPal(" + order.OrderNumber + ") - Error making API request - error code: " + responseKvp[ "L_ERRORCODE0" ] );
         }
       } catch ( Exception exp ) {
-        LoggingService.Instance.Error<PayPal>( "PayPal(" + order.OrderNumber + ") - Refund payment", exp );
+        LoggingService.Instance.Log(exp,   "PayPal(" + order.OrderNumber + ") - Refund payment" );
       }
 
       return apiInfo;
@@ -242,10 +242,10 @@ namespace TeaCommerce.PaymentProviders.Classic {
         if ( responseKvp[ "ACK" ] == "Success" || responseKvp[ "ACK" ] == "SuccessWithWarning" ) {
           apiInfo = InternalGetStatus( order.OrderNumber, responseKvp[ "AUTHORIZATIONID" ], settings );
         } else {
-          LoggingService.Instance.Warn<PayPal>( "PayPal(" + order.OrderNumber + ") - Error making API request - error code: " + responseKvp[ "L_ERRORCODE0" ] );
+          LoggingService.Instance.Log( "PayPal(" + order.OrderNumber + ") - Error making API request - error code: " + responseKvp[ "L_ERRORCODE0" ] );
         }
       } catch ( Exception exp ) {
-        LoggingService.Instance.Error<PayPal>( "PayPal(" + order.OrderNumber + ") - Cancel payment", exp );
+        LoggingService.Instance.Log(exp,   "PayPal(" + order.OrderNumber + ") - Cancel payment" );
       }
 
       return apiInfo;
@@ -299,7 +299,7 @@ namespace TeaCommerce.PaymentProviders.Classic {
           apiInfo = new ApiInfo( transactionId, paymentState );
         }
       } else {
-        LoggingService.Instance.Warn<PayPal>( "PayPal(" + orderNumber + ") - Error making API request - error code: " + responseKvp[ "L_ERRORCODE0" ] );
+        LoggingService.Instance.Log( "PayPal(" + orderNumber + ") - Error making API request - error code: " + responseKvp[ "L_ERRORCODE0" ] );
       }
 
       return apiInfo;

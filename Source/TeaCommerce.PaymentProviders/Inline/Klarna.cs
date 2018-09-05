@@ -92,7 +92,7 @@ namespace TeaCommerce.PaymentProviders.Inline {
           throw new Exception( "Trying to process a callback from Klarna with an order that isn't completed" );
         }
       } catch ( Exception exp ) {
-        LoggingService.Instance.Error<Klarna>( "Klarna(" + order.CartNumber + ") - Process callback", exp );
+        LoggingService.Instance.Log(exp,   "Klarna(" + order.CartNumber + ") - Process callback" );
       }
 
       return callbackInfo;
@@ -281,7 +281,7 @@ namespace TeaCommerce.PaymentProviders.Inline {
         }
 
       } catch ( Exception exp ) {
-        LoggingService.Instance.Error<Klarna>( "Klarna(" + order.CartNumber + ") - ProcessRequest", exp );
+        LoggingService.Instance.Log(exp,   "Klarna(" + order.CartNumber + ") - ProcessRequest" );
       }
 
       return response;
