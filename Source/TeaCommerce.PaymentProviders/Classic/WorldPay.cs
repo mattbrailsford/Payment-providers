@@ -133,7 +133,7 @@ namespace TeaCommerce.PaymentProviders.Classic {
 
         //Write data when testing
         if ( settings.ContainsKey( "testMode" ) && settings[ "testMode" ] == "100" ) {
-          LogRequest<WorldPay>( request, logPostData: true );
+          LogRequest( request, logPostData: true );
         }
 
         string paymentResponsePassword = settings[ "paymentResponsePassword" ];
@@ -142,10 +142,10 @@ namespace TeaCommerce.PaymentProviders.Classic {
         if ( callbackPw == paymentResponsePassword ) {
           cartNumber = request.Form[ "cartId" ];
         } else {
-          LoggingService.Instance.Warn<WorldPay>( "WorldPay - Payment response password check failed - callbackPW: " + callbackPw + " - paymentResponsePassword: " + paymentResponsePassword );
+          LoggingService.Instance.Log( "WorldPay - Payment response password check failed - callbackPW: " + callbackPw + " - paymentResponsePassword: " + paymentResponsePassword );
         }
       } catch ( Exception exp ) {
-        LoggingService.Instance.Error<WorldPay>( "WorldPay - Get cart number", exp );
+        LoggingService.Instance.Log(exp,   "WorldPay - Get cart number" );
       }
 
       return cartNumber;
@@ -162,7 +162,7 @@ namespace TeaCommerce.PaymentProviders.Classic {
 
         //Write data when testing
         if ( settings.ContainsKey( "testMode" ) && settings[ "testMode" ] == "100" ) {
-          LogRequest<WorldPay>( request, logPostData: true );
+          LogRequest( request, logPostData: true );
         }
 
         string paymentResponsePassword = settings[ "paymentResponsePassword" ];
@@ -177,14 +177,14 @@ namespace TeaCommerce.PaymentProviders.Classic {
 
             callbackInfo = new CallbackInfo( totalAmount, transaction, paymentState, cardtype );
           } else {
-            LoggingService.Instance.Warn<WorldPay>( "WorldPay(" + order.CartNumber + ") - Cancelled transaction" );
+            LoggingService.Instance.Log( "WorldPay(" + order.CartNumber + ") - Cancelled transaction" );
           }
         } else {
-          LoggingService.Instance.Warn<WorldPay>( "WorldPay(" + order.CartNumber + ") - Payment response password check failed - callbackPW: " + callbackPw + " - paymentResponsePassword: " + paymentResponsePassword );
+          LoggingService.Instance.Log( "WorldPay(" + order.CartNumber + ") - Payment response password check failed - callbackPW: " + callbackPw + " - paymentResponsePassword: " + paymentResponsePassword );
         }
 
       } catch ( Exception exp ) {
-        LoggingService.Instance.Error<WorldPay>( "WorldPay(" + order.CartNumber + ") - Process callback", exp );
+        LoggingService.Instance.Log(exp,   "WorldPay(" + order.CartNumber + ") - Process callback" );
       }
 
       return callbackInfo;

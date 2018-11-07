@@ -114,7 +114,7 @@ namespace TeaCommerce.PaymentProviders.Inline
                 // If in test mode, write out the form data to a text file
                 if (settings.ContainsKey("mode") && settings["mode"] == "test")
                 {
-                    LogRequest<Stripe>(request, logPostData: true);
+                    LogRequest(request, logPostData: true);
                 }
 
                 StripeEvent stripeEvent = GetStripeEvent(request);
@@ -132,7 +132,7 @@ namespace TeaCommerce.PaymentProviders.Inline
             }
             catch (Exception exp)
             {
-                LoggingService.Instance.Error<Stripe>("Stripe - Get cart number", exp);
+                LoggingService.Instance.Log(exp, "Stripe - Get cart number");
             }
 
             return cartNumber;
@@ -154,7 +154,7 @@ namespace TeaCommerce.PaymentProviders.Inline
                 // If in test mode, write out the form data to a text file
                 if (settings.ContainsKey("mode") && settings["mode"] == "test")
                 {
-                    LogRequest<Stripe>(request, logPostData: true);
+                    LogRequest(request, logPostData: true);
                 }
 
                 var validateCvc = settings["validate_cvc"].TryParse<bool>() ?? false;
@@ -163,12 +163,14 @@ namespace TeaCommerce.PaymentProviders.Inline
                 var validateCountry = settings["validate_country"].TryParse<bool>() ?? false;
                 var capture = settings["capture"].TryParse<bool>() ?? false;
 
+                var orderCurrency = CurrencyService.Instance.Get(order.StoreId, order.CurrencyId);
+
                 StripeChargeService chargeService = new StripeChargeService(settings[settings["mode"] + "_secret_key"]);
 
                 StripeChargeCreateOptions chargeOptions = new StripeChargeCreateOptions
                 {
                     Amount = (int)Math.Round(order.TotalPrice.Value.WithVat * 100, MidpointRounding.AwayFromZero),
-                    Currency = CurrencyService.Instance.Get(order.StoreId, order.CurrencyId).IsoCode,
+                    Currency = orderCurrency.IsoCode,
                     SourceTokenOrExistingSourceId = request.Form["stripeToken"],
                     Description = order.CartNumber,
                     Capture = false
@@ -266,6 +268,9 @@ namespace TeaCommerce.PaymentProviders.Inline
 
                 if (capture && charge.Captured == false)
                 {
+                    order.TransactionInformation.TransactionId = charge.Id;
+                    order.TransactionInformation.AmountAuthorized = new Amount((decimal)charge.Amount / 100, orderCurrency);
+
                     var result = CapturePayment(order, settings);
                     if (result == null || result.PaymentState != PaymentState.Captured)
                     {
@@ -310,7 +315,7 @@ namespace TeaCommerce.PaymentProviders.Inline
             }
             catch (Exception exp)
             {
-                LoggingService.Instance.Error<Stripe>("Stripe(" + order.CartNumber + ") - ProcessCallback", exp);
+                LoggingService.Instance.Log(exp, "Stripe(" + order.CartNumber + ") - ProcessCallback");
             }
 
             return callbackInfo;
@@ -329,7 +334,7 @@ namespace TeaCommerce.PaymentProviders.Inline
                 // If in test mode, write out the form data to a text file
                 if (settings.ContainsKey("mode") && settings["mode"] == "test")
                 {
-                    LogRequest<Stripe>(request, logPostData: true);
+                    LogRequest(request, logPostData: true);
                 }
 
                 //Stripe supports webhooks
@@ -352,7 +357,7 @@ namespace TeaCommerce.PaymentProviders.Inline
             }
             catch (Exception exp)
             {
-                LoggingService.Instance.Error<Stripe>("Stripe(" + order.CartNumber + ") - ProcessRequest", exp);
+                LoggingService.Instance.Log(exp, "Stripe(" + order.CartNumber + ") - ProcessRequest");
             }
 
             return response;
@@ -374,7 +379,7 @@ namespace TeaCommerce.PaymentProviders.Inline
             }
             catch (Exception exp)
             {
-                LoggingService.Instance.Error<Stripe>("Stripe(" + order.OrderNumber + ") - GetStatus", exp);
+                LoggingService.Instance.Log(exp, "Stripe(" + order.OrderNumber + ") - GetStatus");
             }
 
             return null;
@@ -396,7 +401,7 @@ namespace TeaCommerce.PaymentProviders.Inline
             }
             catch (Exception exp)
             {
-                LoggingService.Instance.Error<Stripe>("Stripe(" + order.OrderNumber + ") - GetStatus", exp);
+                LoggingService.Instance.Log(exp, "Stripe(" + order.OrderNumber + ") - GetStatus");
             }
 
             return null;
@@ -425,7 +430,7 @@ namespace TeaCommerce.PaymentProviders.Inline
             }
             catch (Exception exp)
             {
-                LoggingService.Instance.Error<Stripe>("Stripe(" + order.OrderNumber + ") - RefundPayment", exp);
+                LoggingService.Instance.Log(exp, "Stripe(" + order.OrderNumber + ") - RefundPayment");
             }
 
             return null;

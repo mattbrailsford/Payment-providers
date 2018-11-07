@@ -126,7 +126,7 @@ namespace TeaCommerce.PaymentProviders.Classic {
 
         //Write data when testing
         if ( settings[ "TRANSACTION.MODE" ] != "LIVE" ) {
-          LogRequest<Axcess>( request, logPostData: true );
+          LogRequest( request, logPostData: true );
         }
 
         HttpContext.Current.Response.Clear();
@@ -141,7 +141,7 @@ namespace TeaCommerce.PaymentProviders.Classic {
 
           HttpContext.Current.Response.Write( continueUrl );
         } else {
-          LoggingService.Instance.Warn<Axcess>( "Axcess(" + order.CartNumber + ") - Process callback - PROCESSING.CODE: " + request[ "PROCESSING.CODE" ] );
+          LoggingService.Instance.Log( "Axcess(" + order.CartNumber + ") - Process callback - PROCESSING.CODE: " + request[ "PROCESSING.CODE" ] );
 
           string cancelUrl = GetCancelUrl( order, settings );
           if ( !cancelUrl.StartsWith( "http" ) ) {
@@ -151,7 +151,7 @@ namespace TeaCommerce.PaymentProviders.Classic {
           HttpContext.Current.Response.Write( cancelUrl );
         }
       } catch ( Exception exp ) {
-        LoggingService.Instance.Error<Axcess>( "Axcess(" + order.CartNumber + ") - Process callback", exp );
+        LoggingService.Instance.Log( exp, "Axcess(" + order.CartNumber + ") - Process callback" );
       }
 
       return callbackInfo;
@@ -188,11 +188,11 @@ namespace TeaCommerce.PaymentProviders.Classic {
         if ( responseKvps[ "PROCESSING.RESULT" ] == "ACK" ) {
           apiInfo = new ApiInfo( responseKvps[ "IDENTIFICATION.UNIQUEID" ], PaymentState.Captured );
         } else {
-          LoggingService.Instance.Warn<Axcess>( "Axcess(" + order.OrderNumber + ") - Error making API request - PROCESSING.CODE: " + responseKvps[ "PROCESSING.CODE" ] );
+          LoggingService.Instance.Log( "Axcess(" + order.OrderNumber + ") - Error making API request - PROCESSING.CODE: " + responseKvps[ "PROCESSING.CODE" ] );
         }
 
       } catch ( Exception exp ) {
-        LoggingService.Instance.Error<Axcess>( "Axcess(" + order.OrderNumber + ") - Capture payment", exp );
+        LoggingService.Instance.Log( exp, "Axcess(" + order.OrderNumber + ") - Capture payment" );
       }
 
       return apiInfo;
@@ -229,11 +229,11 @@ namespace TeaCommerce.PaymentProviders.Classic {
         if ( responseKvps[ "PROCESSING.RESULT" ] == "ACK" ) {
           apiInfo = new ApiInfo( responseKvps[ "IDENTIFICATION.UNIQUEID" ], PaymentState.Refunded );
         } else {
-          LoggingService.Instance.Warn<Axcess>( "Axcess(" + order.OrderNumber + ") - Error making API request - PROCESSING.CODE: " + responseKvps[ "PROCESSING.CODE" ] );
+          LoggingService.Instance.Log( "Axcess(" + order.OrderNumber + ") - Error making API request - PROCESSING.CODE: " + responseKvps[ "PROCESSING.CODE" ] );
         }
 
       } catch ( Exception exp ) {
-        LoggingService.Instance.Error<Axcess>( "Axcess(" + order.OrderNumber + ") - Refund payment", exp );
+        LoggingService.Instance.Log( exp, "Axcess(" + order.OrderNumber + ") - Refund payment" );
       }
 
       return apiInfo;
@@ -267,11 +267,11 @@ namespace TeaCommerce.PaymentProviders.Classic {
         if ( responseKvps[ "PROCESSING.RESULT" ] == "ACK" ) {
           apiInfo = new ApiInfo( responseKvps[ "IDENTIFICATION.UNIQUEID" ], PaymentState.Cancelled );
         } else {
-          LoggingService.Instance.Warn<Axcess>( "Axcess(" + order.OrderNumber + ") - Error making API request - PROCESSING.CODE: " + responseKvps[ "PROCESSING.CODE" ] );
+          LoggingService.Instance.Log( "Axcess(" + order.OrderNumber + ") - Error making API request - PROCESSING.CODE: " + responseKvps[ "PROCESSING.CODE" ] );
         }
 
       } catch ( Exception exp ) {
-        LoggingService.Instance.Error<Axcess>( "Axcess(" + order.OrderNumber + ") - Cancel payment", exp );
+        LoggingService.Instance.Log( exp, "Axcess(" + order.OrderNumber + ") - Cancel payment" );
       }
 
       return apiInfo;

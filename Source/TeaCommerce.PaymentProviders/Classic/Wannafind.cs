@@ -130,7 +130,7 @@ namespace TeaCommerce.PaymentProviders.Classic {
 
         //Write data when testing
         if ( settings.ContainsKey( "testmode" ) && settings[ "testmode" ] == "1" ) {
-          LogRequest<Wannafind>( request, logGetData: true );
+          LogRequest( request, logGetData: true );
         }
 
         string cartNumber = request.QueryString[ "orderid" ];
@@ -151,10 +151,10 @@ namespace TeaCommerce.PaymentProviders.Classic {
           //Wannafind cant give us info about auto capturing
           callbackInfo = new CallbackInfo( totalAmount / 100M, transaction, PaymentState.Authorized, cardtype, cardnomask );
         } else {
-          LoggingService.Instance.Warn<Wannafind>( "Wannafind(" + order.CartNumber + ") - MD5Sum security check failed" );
+          LoggingService.Instance.Log( "Wannafind(" + order.CartNumber + ") - MD5Sum security check failed" );
         }
       } catch ( Exception exp ) {
-        LoggingService.Instance.Error<Wannafind>( "Wannafind(" + order.CartNumber + ") - Process callback", exp );
+        LoggingService.Instance.Log(exp,   "Wannafind(" + order.CartNumber + ") - Process callback" );
       }
 
       return callbackInfo;
@@ -187,10 +187,10 @@ namespace TeaCommerce.PaymentProviders.Classic {
           apiInfo = new ApiInfo( order.TransactionInformation.TransactionId, paymentState );
 
         } catch ( WebException ) {
-          LoggingService.Instance.Warn<Wannafind>( "Wannafind(" + order.OrderNumber + ") - Error making API request - Wrong credentials or IP address not allowed" );
+          LoggingService.Instance.Log( "Wannafind(" + order.OrderNumber + ") - Error making API request - Wrong credentials or IP address not allowed" );
         }
       } catch ( Exception exp ) {
-        LoggingService.Instance.Error<Wannafind>( "Wannafind(" + order.OrderNumber + ") - Get status", exp );
+        LoggingService.Instance.Log(exp,   "Wannafind(" + order.OrderNumber + ") - Get status" );
       }
 
       return apiInfo;
@@ -206,13 +206,13 @@ namespace TeaCommerce.PaymentProviders.Classic {
           if ( returnCode == 0 ) {
             apiInfo = new ApiInfo( order.TransactionInformation.TransactionId, PaymentState.Captured );
           } else {
-            LoggingService.Instance.Warn<Wannafind>( "Wannafind(" + order.OrderNumber + ") - Error making API request - Error code: " + returnCode );
+            LoggingService.Instance.Log( "Wannafind(" + order.OrderNumber + ") - Error making API request - Error code: " + returnCode );
           }
         } catch ( WebException ) {
-          LoggingService.Instance.Warn<Wannafind>( "Wannafind(" + order.OrderNumber + ") - Error making API request - Wrong credentials or IP address not allowed" );
+          LoggingService.Instance.Log( "Wannafind(" + order.OrderNumber + ") - Error making API request - Wrong credentials or IP address not allowed" );
         }
       } catch ( Exception exp ) {
-        LoggingService.Instance.Error<Wannafind>( "Wannafind(" + order.OrderNumber + ") - Capture payment", exp );
+        LoggingService.Instance.Log(exp,   "Wannafind(" + order.OrderNumber + ") - Capture payment" );
       }
 
       return apiInfo;
@@ -227,13 +227,13 @@ namespace TeaCommerce.PaymentProviders.Classic {
           if ( returnCode == 0 ) {
             apiInfo = new ApiInfo( order.TransactionInformation.TransactionId, PaymentState.Refunded );
           } else {
-            LoggingService.Instance.Warn<Wannafind>( "Wannafind(" + order.OrderNumber + ") - Error making API request - Error code: " + returnCode );
+            LoggingService.Instance.Log( "Wannafind(" + order.OrderNumber + ") - Error making API request - Error code: " + returnCode );
           }
         } catch ( WebException ) {
-          LoggingService.Instance.Warn<Wannafind>( "Wannafind(" + order.OrderNumber + ") - Error making API request - Wrong credentials or IP address not allowed" );
+          LoggingService.Instance.Log( "Wannafind(" + order.OrderNumber + ") - Error making API request - Wrong credentials or IP address not allowed" );
         }
       } catch ( Exception exp ) {
-        LoggingService.Instance.Error<Wannafind>( "Wannafind(" + order.OrderNumber + ") - Refund payment", exp );
+        LoggingService.Instance.Log(exp,   "Wannafind(" + order.OrderNumber + ") - Refund payment" );
       }
 
       return apiInfo;
@@ -248,13 +248,13 @@ namespace TeaCommerce.PaymentProviders.Classic {
           if ( returnCode == 0 ) {
             apiInfo = new ApiInfo( order.TransactionInformation.TransactionId, PaymentState.Cancelled );
           } else {
-            LoggingService.Instance.Warn<Wannafind>( "Wannafind(" + order.OrderNumber + ") - Error making API request - Error code: " + returnCode );
+            LoggingService.Instance.Log( "Wannafind(" + order.OrderNumber + ") - Error making API request - Error code: " + returnCode );
           }
         } catch ( WebException ) {
-          LoggingService.Instance.Warn<Wannafind>( "Wannafind(" + order.OrderNumber + ") - Error making API request - Wrong credentials or IP address not allowed" );
+          LoggingService.Instance.Log( "Wannafind(" + order.OrderNumber + ") - Error making API request - Wrong credentials or IP address not allowed" );
         }
       } catch ( Exception exp ) {
-        LoggingService.Instance.Error<Wannafind>( "Wannafind(" + order.OrderNumber + ") - Cancel payment", exp );
+        LoggingService.Instance.Log(exp,   "Wannafind(" + order.OrderNumber + ") - Cancel payment" );
       }
 
       return apiInfo;
