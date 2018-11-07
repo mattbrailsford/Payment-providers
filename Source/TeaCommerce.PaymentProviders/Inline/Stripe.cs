@@ -163,12 +163,14 @@ namespace TeaCommerce.PaymentProviders.Inline
                 var validateCountry = settings["validate_country"].TryParse<bool>() ?? false;
                 var capture = settings["capture"].TryParse<bool>() ?? false;
 
+                var orderCurrency = CurrencyService.Instance.Get(order.StoreId, order.CurrencyId);
+
                 StripeChargeService chargeService = new StripeChargeService(settings[settings["mode"] + "_secret_key"]);
 
                 StripeChargeCreateOptions chargeOptions = new StripeChargeCreateOptions
                 {
                     Amount = (int)Math.Round(order.TotalPrice.Value.WithVat * 100, MidpointRounding.AwayFromZero),
-                    Currency = CurrencyService.Instance.Get(order.StoreId, order.CurrencyId).IsoCode,
+                    Currency = orderCurrency.IsoCode,
                     SourceTokenOrExistingSourceId = request.Form["stripeToken"],
                     Description = order.CartNumber,
                     Capture = false
@@ -266,6 +268,9 @@ namespace TeaCommerce.PaymentProviders.Inline
 
                 if (capture && charge.Captured == false)
                 {
+                    order.TransactionInformation.TransactionId = charge.Id;
+                    order.TransactionInformation.AmountAuthorized = new Amount((decimal)charge.Amount / 100, orderCurrency);
+
                     var result = CapturePayment(order, settings);
                     if (result == null || result.PaymentState != PaymentState.Captured)
                     {
@@ -390,7 +395,8 @@ namespace TeaCommerce.PaymentProviders.Inline
                 settings.MustContainKey(settings["mode"] + "_secret_key", "settings");
 
                 StripeChargeService chargeService = new StripeChargeService(settings[settings["mode"] + "_secret_key"]);
-                StripeCharge charge = chargeService.Capture(order.TransactionInformation.TransactionId, (int)order.TransactionInformation.AmountAuthorized.Value * 100);
+                StripeCharge charge = chargeService.Capture(order.TransactionInformation.TransactionId, 
+                    (int)Math.Round(order.TransactionInformation.AmountAuthorized.Value * 100, MidpointRounding.AwayFromZero));
 
                 return new ApiInfo(charge.Id, GetPaymentState(charge));
             }
