@@ -14,7 +14,7 @@ using TeaCommerce.Api.Web.PaymentProviders;
 
 namespace TeaCommerce.PaymentProviders.Inline
 {
-    [PaymentProvider("StripeSubscriptionInline")]
+    [PaymentProvider("Stripe (Subscription) - inline")]
     public class StripeSubscription : APaymentProvider
     {
         public override string DocumentationLink { get { return "https://stripe.com/docs"; } }
@@ -113,8 +113,11 @@ namespace TeaCommerce.PaymentProviders.Inline
                 // If in test mode, write out the form data to a text file
                 if (settings.ContainsKey("mode") && settings["mode"] == "test")
                 {
-                    LogRequest(request, logPostData: true);
+                    LogRequest<Stripe>(request, logPostData: true);
                 }
+
+                // Get the current stripe api key based on mode
+                var stripeApiKey = settings[settings["mode"] + "_secret_key"];
 
                 // See if this is from a stripe event
                 var stripeEvent = GetStripeEvent(request);
@@ -124,10 +127,14 @@ namespace TeaCommerce.PaymentProviders.Inline
                     if (stripeEvent.Type.StartsWith("invoice."))
                     {
                         var invoice = (StripeInvoice)Mapper<StripeInvoice>.MapFromJson(stripeEvent.Data.Object.ToString());
-                        var lineItem = invoice.StripeInvoiceLineItems.Data.FirstOrDefault(x => x.Type == "subscription" && x.Metadata.ContainsKey("cartNumber"));
-                        if (lineItem != null)
+                        if (!string.IsNullOrWhiteSpace(invoice.SubscriptionId))
                         {
-                            cartNumber = lineItem.Metadata["cartNumber"];
+                            var subscriptionService = new StripeSubscriptionService(stripeApiKey);
+                            var subscription = subscriptionService.Get(invoice.CustomerId, invoice.SubscriptionId);
+                            if (subscription?.Metadata != null && subscription.Metadata.ContainsKey("cartNumber"))
+                            {
+                                cartNumber = subscription.Metadata["cartNumber"];
+                            }
                         }
                     }
                 }
@@ -139,7 +146,7 @@ namespace TeaCommerce.PaymentProviders.Inline
             }
             catch (Exception exp)
             {
-                LoggingService.Instance.Log(exp, "Stripe Subscription - Get cart number");
+                LoggingService.Instance.Error<Stripe>("Stripe Subscription - Get cart number", exp);
             }
 
             return cartNumber;
@@ -160,17 +167,16 @@ namespace TeaCommerce.PaymentProviders.Inline
                 // If in test mode, write out the form data to a text file
                 if (settings.ContainsKey("mode") && settings["mode"] == "test")
                 {
-                    LogRequest(request, logPostData: true);
+                    LogRequest<StripeSubscription>(request, logPostData: true);
                 }
 
                 // Get the current stripe api key based on mode
                 var stripeApiKey = settings[settings["mode"] + "_secret_key"];
 
+                //TODO: Validate credit card
+
                 // Get the Plan ID (Assumes a subscription order is a single order line with the sku being the planId)
-                var orderLine = order.OrderLines.First();
-                var planId = orderLine.Properties["planId"];
-                if (string.IsNullOrWhiteSpace(planId))
-                    planId = orderLine.Sku;
+                var planId = order.OrderLines.First().Sku;
 
                 // Create customer and subscribe to plan
                 var customerService = new StripeCustomerService(stripeApiKey);
@@ -183,7 +189,6 @@ namespace TeaCommerce.PaymentProviders.Inline
                 var subscriptionService = new StripeSubscriptionService(stripeApiKey);
                 var subscription = subscriptionService.Create(customer.Id, planId, new StripeSubscriptionCreateOptions
                 {
-                    TaxPercent = order.PaymentInformation.VatRate.Value * 100,
                     Metadata = new Dictionary<string, string>
                     {
                         { "orderId", order.Id.ToString() },
@@ -227,7 +232,7 @@ namespace TeaCommerce.PaymentProviders.Inline
             }
             catch (Exception exp)
             {
-                LoggingService.Instance.Log(exp, "Stripe Subscription (" + order.CartNumber + ") - ProcessCallback");
+                LoggingService.Instance.Error<Stripe>("Stripe Subscription (" + order.CartNumber + ") - ProcessCallback", exp);
             }
 
             return callbackInfo;
@@ -244,8 +249,8 @@ namespace TeaCommerce.PaymentProviders.Inline
                 // If in test mode, write out the form data to a text file
                 if (settings.ContainsKey("mode") && settings["mode"] == "test")
                 {
-                    LogRequest(request, logPostData: true);
-                } 
+                    LogRequest<Stripe>(request, logPostData: true);
+                }
 
                 // Get the current stripe event
                 var stripeEvent = GetStripeEvent(request);
@@ -267,7 +272,7 @@ namespace TeaCommerce.PaymentProviders.Inline
             }
             catch (Exception exp)
             {
-                LoggingService.Instance.Log(exp, "Stripe Subscription (" + order.CartNumber + ") - ProcessRequest");
+                LoggingService.Instance.Error<Stripe>("Stripe Subscription (" + order.CartNumber + ") - ProcessRequest", exp);
                 throw;
             }
 
