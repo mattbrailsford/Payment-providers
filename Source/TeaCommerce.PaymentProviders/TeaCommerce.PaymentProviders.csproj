@@ -47,8 +47,8 @@
       <HintPath>..\packages\Paynova.Api.Client.1.0.0\lib\net35\Paynova.Api.Client.dll</HintPath>
     </Reference>
     <Reference Include="Stripe.net, Version=7.0.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Stripe.net.7.0.4\lib\net45\Stripe.net.dll</HintPath>
-      <Private>True</Private>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Lib\Stripe\Stripe.net.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
